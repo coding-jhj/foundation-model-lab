@@ -9,6 +9,7 @@ from torch import nn
 from data.batching import sample_language_model_batch
 from training.checkpoint import save_checkpoint
 from training.loop import language_model_loss, train_step
+from training.schedule import linear_warmup_scale
 
 
 @dataclass(frozen=True)
@@ -68,6 +69,7 @@ def run_training(
     batch_size: int,
     context_length: int,
     max_steps: int,
+    warmup_steps: int = 0,
     eval_interval: int = 0,
     eval_batches: int = 1,
     checkpoint_interval: int = 0,
@@ -77,6 +79,8 @@ def run_training(
     """Run training, periodic validation, and optional checkpointing."""
     if max_steps <= 0:
         raise ValueError("max_steps must be positive")
+    if warmup_steps < 0:
+        raise ValueError("warmup_steps must be non-negative")
     if eval_interval < 0 or checkpoint_interval < 0:
         raise ValueError("intervals must be non-negative")
     if eval_interval > 0 and eval_batches <= 0:
@@ -85,8 +89,13 @@ def run_training(
     train_losses = []
     validation_losses = []
     device = _model_device(model)
+    base_learning_rates = [group["lr"] for group in optimizer.param_groups]
 
     for step in range(1, max_steps + 1):
+        learning_rate_scale = linear_warmup_scale(step, warmup_steps)
+        for group, base_learning_rate in zip(optimizer.param_groups, base_learning_rates):
+            group["lr"] = base_learning_rate * learning_rate_scale
+
         input_ids, targets = sample_language_model_batch(
             train_tokens,
             batch_size=batch_size,
