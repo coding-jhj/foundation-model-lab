@@ -1,0 +1,10 @@
+A foundation model is a system trained to learn general patterns from data.
+A language model predicts the next token from the tokens that came before it.
+This small corpus is only a reproducible smoke test for the research pipeline.
+The model should reduce training loss while validation remains an independent check.
+Every experiment should record its configuration, seed, hardware, budget, and result.
+Researchers should change one important variable at a time and report failures.
+A simple baseline is useful because later improvements need a trustworthy comparison.
+The goal of this example is to verify data loading, optimization, checkpoints, and generation.
+A small experiment is not evidence for a broad scientific claim.
+It is a tool for checking that the implementation behaves as expected.
