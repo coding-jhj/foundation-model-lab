@@ -10,6 +10,7 @@ device: auto
 data:
   train_path: data/raw/wikitext-2-raw-v1/train.txt
   validation_path: data/raw/wikitext-2-raw-v1/validation.txt
+  test_path: data/raw/wikitext-2-raw-v1/test.txt
   tokenizer: character
   context_length: 128
 
