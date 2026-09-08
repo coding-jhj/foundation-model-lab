@@ -1,0 +1,44 @@
+# Small end-to-end smoke configuration for the reproducible training pipeline.
+
+project:
+  name: mini-gpt-smoke
+  stage: pretraining-pipeline
+
+seed: 42
+device: auto
+
+data:
+  train_path: data/examples/tiny_train.txt
+  validation_path: data/examples/tiny_validation.txt
+  tokenizer: character
+  context_length: 32
+
+model:
+  vocab_size: 96
+  context_length: 32
+  d_model: 32
+  n_heads: 4
+  n_layers: 2
+  d_ff: 128
+  dropout: 0.0
+  position_encoding: learned
+
+training:
+  batch_size: 4
+  gradient_accumulation_steps: 1
+  max_steps: 20
+  learning_rate: 0.001
+  weight_decay: 0.01
+  warmup_steps: 5
+  grad_clip_norm: 1.0
+  eval_interval: 5
+  checkpoint_interval: 10
+  num_workers: 0
+  mixed_precision: false
+  output_dir: outputs/mini-gpt-smoke
+
+evaluation:
+  eval_batches: 2
+  max_new_tokens: 32
+  temperature: 0.8
+  top_k: 20
