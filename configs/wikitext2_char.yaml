@@ -1,0 +1,44 @@
+# First real-data baseline using WikiText-2 raw text.
+
+project:
+  name: wikitext2-character-baseline
+  stage: real-data-baseline
+
+seed: 42
+device: auto
+
+data:
+  train_path: data/raw/wikitext-2-raw-v1/train.txt
+  validation_path: data/raw/wikitext-2-raw-v1/validation.txt
+  tokenizer: character
+  context_length: 128
+
+model:
+  vocab_size: 2048
+  context_length: 128
+  d_model: 128
+  n_heads: 4
+  n_layers: 4
+  d_ff: 512
+  dropout: 0.0
+  position_encoding: learned
+
+training:
+  batch_size: 8
+  gradient_accumulation_steps: 1
+  max_steps: 1000
+  learning_rate: 0.0003
+  weight_decay: 0.1
+  warmup_steps: 100
+  grad_clip_norm: 1.0
+  eval_interval: 100
+  checkpoint_interval: 100
+  num_workers: 0
+  mixed_precision: false
+  output_dir: checkpoints/wikitext2-character-baseline
+
+evaluation:
+  eval_batches: 20
+  max_new_tokens: 100
+  temperature: 0.8
+  top_k: 50
