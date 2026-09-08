@@ -23,6 +23,8 @@ class CharacterTokenizer:
             raise ValueError("special tokens must be unique")
         if not set(self._special_tokens).issubset(self._vocabulary):
             raise ValueError("special tokens must be included in the vocabulary")
+        if "<unk>" not in self._vocabulary:
+            raise ValueError("vocabulary must include the <unk> token")
 
         self._token_to_id = {
             token: token_id for token_id, token in enumerate(self._vocabulary)
@@ -50,19 +52,19 @@ class CharacterTokenizer:
 
     @property
     def pad_token_id(self) -> int:
-        return self.token_to_id("<pad>")
+        return self._token_to_id["<pad>"]
 
     @property
     def unk_token_id(self) -> int:
-        return self.token_to_id("<unk>")
+        return self._token_to_id["<unk>"]
 
     @property
     def bos_token_id(self) -> int:
-        return self.token_to_id("<bos>")
+        return self._token_to_id["<bos>"]
 
     @property
     def eos_token_id(self) -> int:
-        return self.token_to_id("<eos>")
+        return self._token_to_id["<eos>"]
 
     def token_to_id(self, token: str) -> int:
         """Return the ID for a token or the unknown-token ID when absent."""
