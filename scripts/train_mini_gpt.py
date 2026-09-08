@@ -7,10 +7,11 @@ import argparse
 
 import torch
 
-from data.corpus import load_character_corpus
+from data.corpus import encode_text_file, load_character_corpus
 from model.transformer import MiniGPT
 from training.config import load_config
-from training.pipeline import run_training
+from training.metrics import append_metrics_record
+from training.pipeline import evaluate_loss, run_training
 from training.reproducibility import resolve_device, set_seed
 
 
@@ -109,15 +110,41 @@ def main(argv: list[str] | None = None) -> int:
         else None,
     )
 
+    test_loss = None
+    test_tokens = None
+    test_path = data_config.get("test_path")
+    if test_path is not None:
+        test_tokens = encode_text_file(test_path, tokenizer)
+        test_loss = evaluate_loss(
+            model,
+            test_tokens,
+            batch_size=int(training_config["batch_size"]),
+            context_length=context_length,
+            num_batches=int(evaluation_config.get("eval_batches", 1)),
+        )
+        if metrics_path is not None:
+            append_metrics_record(
+                metrics_path,
+                {
+                    "event": "test_evaluation",
+                    "test_loss": test_loss,
+                    "test_tokens": test_tokens.numel(),
+                },
+            )
+
     print(f"device: {device}")
     print(f"vocabulary size: {tokenizer.vocab_size}")
     print(f"training tokens: {train_tokens.numel()}")
     print(f"validation tokens: {validation_tokens.numel()}")
+    if test_tokens is not None:
+        print(f"test tokens: {test_tokens.numel()}")
     print(f"completed steps: {result.last_step}")
     print(f"final training loss: {result.train_losses[-1]:.6f}")
     if result.validation_losses:
         step, validation_loss = result.validation_losses[-1]
         print(f"validation loss at step {step}: {validation_loss:.6f}")
+    if test_loss is not None:
+        print(f"test loss: {test_loss:.6f}")
     print(f"elapsed seconds: {result.elapsed_seconds:.2f}")
     print(f"steps per second: {result.last_step / max(result.elapsed_seconds, 1e-12):.2f}")
     print(
