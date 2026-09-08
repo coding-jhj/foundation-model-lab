@@ -34,7 +34,7 @@ def prepare_wikitext2(
         from datasets import load_dataset
     except ImportError as error:
         raise RuntimeError(
-            "Install the data extra first: python -m pip install -e ".[data]""
+            "Install the data extra first: python -m pip install -e '.[data]'"
         ) from error
 
     dataset = load_dataset(DATASET_ID, DATASET_CONFIG, revision=revision)
