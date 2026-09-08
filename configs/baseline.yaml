@@ -1,0 +1,44 @@
+# Baseline configuration for the first MiniGPT implementation.
+# Values are intentionally small and must be validated on the target hardware.
+
+project:
+  name: mini-gpt-baseline
+  stage: mini-gpt
+
+seed: 42
+device: auto
+
+data:
+  train_path: data/raw/train.txt
+  validation_path: data/raw/validation.txt
+  tokenizer: character
+  context_length: 256
+
+model:
+  vocab_size: 512
+  d_model: 256
+  n_heads: 4
+  n_layers: 6
+  d_ff: 1024
+  dropout: 0.0
+  position_encoding: learned
+
+training:
+  batch_size: 16
+  gradient_accumulation_steps: 1
+  max_steps: 5000
+  learning_rate: 0.0003
+  weight_decay: 0.1
+  warmup_steps: 200
+  grad_clip_norm: 1.0
+  eval_interval: 250
+  checkpoint_interval: 250
+  num_workers: 2
+  mixed_precision: false
+  output_dir: checkpoints/mini-gpt-baseline
+
+evaluation:
+  eval_batches: 50
+  max_new_tokens: 100
+  temperature: 0.8
+  top_k: 50
