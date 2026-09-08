@@ -89,6 +89,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.max_steps is not None
         else int(training_config["max_steps"])
     )
+    metrics_path = training_config.get("metrics_path")
     result = run_training(
         model,
         optimizer,
@@ -102,6 +103,7 @@ def main(argv: list[str] | None = None) -> int:
         eval_batches=int(evaluation_config.get("eval_batches", 1)),
         checkpoint_interval=int(training_config.get("checkpoint_interval", 0)),
         output_dir=training_config.get("output_dir"),
+        metrics_path=metrics_path,
         max_grad_norm=float(training_config["grad_clip_norm"])
         if training_config.get("grad_clip_norm") is not None
         else None,
@@ -116,6 +118,14 @@ def main(argv: list[str] | None = None) -> int:
     if result.validation_losses:
         step, validation_loss = result.validation_losses[-1]
         print(f"validation loss at step {step}: {validation_loss:.6f}")
+    print(f"elapsed seconds: {result.elapsed_seconds:.2f}")
+    print(f"steps per second: {result.last_step / max(result.elapsed_seconds, 1e-12):.2f}")
+    print(
+        "peak GPU memory (MiB): "
+        f"{result.peak_gpu_memory_bytes / (1024**2):.2f}",
+    )
+    if metrics_path is not None:
+        print(f"metrics file: {metrics_path}")
 
     return 0
 
