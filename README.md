@@ -28,6 +28,8 @@ Vision and multimodal research are intentionally out of scope for this lab.
 
 ~~~text
 foundation-model-lab/
+├── data/
+│   └── examples/
 ├── papers/
 │   ├── reading_notes/
 │   └── reproduction/
@@ -39,9 +41,79 @@ foundation-model-lab/
 ├── configs/
 ├── experiments/
 ├── reports/
+├── scripts/
 ├── tests/
 └── docs/
 ~~~
+
+## Current milestone
+
+**Milestone 1 — MiniGPT and reproducible pre-training**
+
+The repository now contains:
+
+- Stable mathematical primitives and a character tokenizer
+- Causal self-attention and a compact decoder-only Transformer
+- Training steps, validation loss estimation, and checkpoint persistence
+- Greedy and temperature-based autoregressive generation
+- Seed and device utilities
+- YAML configuration loading
+- An end-to-end training command
+- English toy data for a non-scientific smoke test
+
+The toy corpus only verifies that the pipeline runs. It is not evidence for a language-model research claim.
+
+## Local setup
+
+Create and activate a virtual environment:
+
+~~~bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+~~~
+
+Install a hardware-appropriate PyTorch build separately when GPU training is required. The exact installation command depends on the operating system, Python version, and CUDA support.
+
+Run the tests:
+
+~~~bash
+python -m pytest
+~~~
+
+## Run the end-to-end smoke experiment
+
+The smoke configuration uses the tracked English toy corpus and a small model:
+
+~~~bash
+python scripts/train_mini_gpt.py --config configs/smoke.yaml
+~~~
+
+For a short custom run, override the number of optimization steps:
+
+~~~bash
+python scripts/train_mini_gpt.py --config configs/smoke.yaml --max-steps 5
+~~~
+
+Checkpoints are written under outputs/mini-gpt-smoke/, which is intentionally ignored by Git.
+
+## Run a real local experiment
+
+Place UTF-8 text files at paths such as:
+
+~~~text
+data/raw/train.txt
+data/raw/validation.txt
+~~~
+
+The tokenizer vocabulary is built from the training text only. Characters that occur only in validation data are encoded as <unk>. Copy configs/baseline.yaml, update the data paths and experiment budget, and run:
+
+~~~bash
+python scripts/train_mini_gpt.py --config configs/baseline.yaml
+~~~
+
+The current command supports the character tokenizer, learned positional embeddings, single-step updates, and full-precision training. Unsupported configuration options fail explicitly instead of being silently ignored.
 
 ## Research protocol
 
@@ -60,32 +132,7 @@ Every experiment must record:
 - Failure analysis
 - Next experiment
 
-The goal is to make every result understandable and reproducible by someone who did not run the experiment.
-
-## Current milestone
-
-**Milestone 0 — Research Lab Setup**
-
-The first milestone establishes the repository structure, experiment records, paper-reading notes, baseline configuration, and test scaffolding. No research claim is made at this stage.
-
-## Local setup
-
-Create and activate a virtual environment:
-
-~~~bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
-~~~
-
-Install a hardware-appropriate PyTorch build separately when GPU training is required. The exact PyTorch installation command depends on the operating system, Python version, and CUDA support.
-
-Run the scaffold tests:
-
-~~~bash
-python -m pytest
-~~~
+The goal is to make every result understandable and reproducible by someone who did not run it.
 
 ## Principles
 
