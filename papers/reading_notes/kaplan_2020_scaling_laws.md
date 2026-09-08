@@ -67,7 +67,15 @@ Vary model capacity by changing the Transformer dimensions:
 - Feed-forward dimension
 - Number of attention heads, while keeping the embedding dimension divisible by the head count
 
-The exact variants and their measured parameter counts will be recorded after the parameter-count utility is added.
+The pilot uses these fixed-shape configurations:
+
+| Variant | d_model | n_heads | n_layers | d_ff | Training steps |
+|---|---:|---:|---:|---:|---:|
+| Small | 64 | 2 | 2 | 256 | 10,000 |
+| Base | 128 | 4 | 4 | 512 | 10,000 |
+| Large | 256 | 8 | 6 | 1,024 | 10,000 |
+
+All three configurations use the same vocabulary capacity, context length, batch size, optimizer, learning rate, warmup, evaluation budget, and seed. The training command reports the exact trainable parameter count for each run.
 
 ### Primary metric
 
