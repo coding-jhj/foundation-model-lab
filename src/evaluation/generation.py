@@ -14,6 +14,7 @@ def generate(
     temperature: float = 1.0,
     top_k: int | None = None,
     eos_token_id: int | None = None,
+    allowed_vocab_size: int | None = None,
 ) -> torch.Tensor:
     """Autoregressively append tokens using greedy or temperature sampling."""
     if input_ids.ndim != 2:
@@ -24,6 +25,8 @@ def generate(
         raise ValueError("temperature must be non-negative")
     if top_k is not None and top_k <= 0:
         raise ValueError("top_k must be positive when provided")
+    if allowed_vocab_size is not None and allowed_vocab_size <= 0:
+        raise ValueError("allowed_vocab_size must be positive when provided")
 
     context_length = getattr(model, "context_length", None)
     if not isinstance(context_length, int) or context_length <= 0:
@@ -38,6 +41,16 @@ def generate(
             context = generated[:, -context_length:]
             logits = model(context)
             next_token_logits = logits[:, -1, :]
+
+            if allowed_vocab_size is not None:
+                if allowed_vocab_size > next_token_logits.shape[-1]:
+                    raise ValueError(
+                        "allowed_vocab_size cannot exceed the model vocabulary dimension"
+                    )
+                next_token_logits = next_token_logits.clone()
+                next_token_logits[..., allowed_vocab_size:] = torch.finfo(
+                    next_token_logits.dtype
+                ).min
 
             if temperature == 0.0:
                 next_token = next_token_logits.argmax(dim=-1, keepdim=True)
