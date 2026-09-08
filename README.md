@@ -1,0 +1,104 @@
+# Foundation Model Lab
+
+A reproducible research and engineering lab for NLP and large language model foundation models.
+
+## Scope
+
+This repository focuses on:
+
+- Decoder-only language model implementation
+- Pre-training data pipelines
+- Reproducible experiments
+- Paper reproduction
+- Training and inference efficiency
+- Independent research for Research Engineer and LLM research roles
+
+Vision and multimodal research are intentionally out of scope for this lab.
+
+## Portfolio roadmap
+
+1. Build a small language model from first principles.
+2. Build a reproducible pre-training pipeline.
+3. Reproduce selected scaling, data, and efficiency papers.
+4. Select one flagship independent research question.
+5. Run pilot, main, and analysis experiments.
+6. Publish code, reports, and a paper-style write-up.
+
+## Repository layout
+
+~~~text
+foundation-model-lab/
+├── papers/
+│   ├── reading_notes/
+│   └── reproduction/
+├── src/
+│   ├── model/
+│   ├── data/
+│   ├── training/
+│   └── evaluation/
+├── configs/
+├── experiments/
+├── reports/
+├── tests/
+└── docs/
+~~~
+
+## Research protocol
+
+Every experiment must record:
+
+- Research question
+- Hypothesis
+- Dataset and license
+- Model architecture
+- Intervention
+- Controlled variables
+- Random seed
+- Hardware and memory
+- Training budget
+- Metrics and results
+- Failure analysis
+- Next experiment
+
+The goal is to make every result understandable and reproducible by someone who did not run the experiment.
+
+## Current milestone
+
+**Milestone 0 — Research Lab Setup**
+
+The first milestone establishes the repository structure, experiment records, paper-reading notes, baseline configuration, and test scaffolding. No research claim is made at this stage.
+
+## Local setup
+
+Create and activate a virtual environment:
+
+~~~bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+~~~
+
+Install a hardware-appropriate PyTorch build separately when GPU training is required. The exact PyTorch installation command depends on the operating system, Python version, and CUDA support.
+
+Run the scaffold tests:
+
+~~~bash
+python -m pytest
+~~~
+
+## Principles
+
+- Start small enough to run experiments repeatedly.
+- Change one important variable at a time.
+- Keep baselines and interventions comparable.
+- Report negative and inconclusive results.
+- Do not treat an AI-generated suggestion as experimental evidence.
+- Verify every research claim with executed experiments.
+
+## Primary references
+
+- Vaswani et al., *Attention Is All You Need*
+- Stanford CS336, *Language Modeling from Scratch*
+- Kaplan et al., *Scaling Laws for Neural Language Models*
+- Hoffmann et al., *Training Compute-Optimal Large Language Models*
