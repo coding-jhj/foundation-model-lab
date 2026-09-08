@@ -67,7 +67,7 @@ peak GPU memory (MiB): 129.80
 metrics file: runs/wikitext2-character-baseline/metrics.jsonl
 ~~~
 
-## Interpretation
+## Quantitative interpretation
 
 The run completed successfully and produced the expected operational and evaluation outputs.
 
@@ -75,26 +75,45 @@ The final validation loss was 2.482680 and the held-out test loss was 2.469743. 
 
 The baseline also confirms that the current implementation can train the real-data corpus on the available GPU with low measured peak memory. The reported memory value describes the instrumented training process and is not a claim about the maximum capacity of the GPU.
 
+## Qualitative generation check
+
+The final checkpoint was loaded successfully and evaluated with a fixed prompt:
+
+- **Checkpoint:** 'checkpoints/wikitext2-character-baseline/step-001000.pt'
+- **Prompt:** 'The '
+- **Decoding:** Greedy decoding (temperature=0)
+- **Requested continuation:** 100 tokens
+
+User-verified output:
+
+~~~text
+The the the the the the the the the the the the the the the the the the t the the the the the the the th
+~~~
+
+The output is highly repetitive and is not yet qualitatively useful as natural text. The most likely explanation is that 1,000 updates are insufficient for this small character-level model to learn stable long-range structure; this is a working hypothesis, not a proven diagnosis. The successful checkpoint load and vocabulary restriction show that the inference path itself executed correctly.
+
 ## Artifacts
 
-- **Metrics:** `runs/wikitext2-character-baseline/metrics.jsonl`
-- **Checkpoint directory:** `checkpoints/wikitext2-character-baseline/`
-- **Configuration:** `configs/wikitext2_char.yaml`
-- **Dataset preparation script:** `scripts/prepare_wikitext2.py`
+- **Metrics:** 'runs/wikitext2-character-baseline/metrics.jsonl'
+- **Checkpoint directory:** 'checkpoints/wikitext2-character-baseline/'
+- **Configuration:** 'configs/wikitext2_char.yaml'
+- **Dataset preparation script:** 'scripts/prepare_wikitext2.py'
+- **Sampling script:** 'scripts/sample_mini_gpt.py'
 - **Git tracking:** Runtime artifacts remain local and are ignored by Git.
 
 ## Limitations
 
 - This is one seed and one training budget.
 - The model is character-level, so its loss is not directly comparable with subword-token language-model results.
-- No generated samples have been evaluated yet.
+- The qualitative check used one prompt and greedy decoding.
 - No parameter-count or FLOP accounting has been added to this record.
 - No paper baseline or ablation has been run.
 - The metrics JSONL and checkpoint files are local artifacts, not committed to Git.
 
 ## Next steps
 
-1. Inspect the metrics history and verify checkpoint loading.
-2. Generate fixed prompts with deterministic decoding and record qualitative samples.
-3. Add parameter-count and evaluation summaries to the experiment report.
-4. Select a first paper reproduction with a clear, low-compute ablation that fits the current codebase.
+1. Run a fresh 10,000-step extended baseline with the same configuration and seed.
+2. Repeat the fixed-prompt generation check at step 10,000.
+3. Compare the 1,000-step and 10,000-step loss curves and qualitative outputs.
+4. Add parameter-count and evaluation summaries to the experiment report.
+5. Select a first paper reproduction with a clear, low-compute ablation that fits the current codebase.
