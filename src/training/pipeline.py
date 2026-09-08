@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from torch import nn
 from data.batching import sample_language_model_batch
 from training.checkpoint import save_checkpoint
 from training.loop import language_model_loss, train_step
+from training.metrics import append_metrics_record, initialize_metrics_file
 from training.schedule import linear_warmup_scale
 
 
@@ -19,6 +21,8 @@ class TrainingRunResult:
     train_losses: list[float]
     validation_losses: list[tuple[int, float]]
     last_step: int
+    elapsed_seconds: float = 0.0
+    peak_gpu_memory_bytes: int = 0
 
 
 def _model_device(model: nn.Module) -> torch.device:
@@ -74,9 +78,10 @@ def run_training(
     eval_batches: int = 1,
     checkpoint_interval: int = 0,
     output_dir: str | Path | None = None,
+    metrics_path: str | Path | None = None,
     max_grad_norm: float | None = None,
 ) -> TrainingRunResult:
-    """Run training, periodic validation, and optional checkpointing."""
+    """Run training, periodic validation, checkpointing, and metrics logging."""
     if max_steps <= 0:
         raise ValueError("max_steps must be positive")
     if warmup_steps < 0:
@@ -90,6 +95,11 @@ def run_training(
     validation_losses = []
     device = _model_device(model)
     base_learning_rates = [group["lr"] for group in optimizer.param_groups]
+    metrics_file = initialize_metrics_file(metrics_path) if metrics_path is not None else None
+
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats(device)
+    start_time = time.perf_counter()
 
     for step in range(1, max_steps + 1):
         learning_rate_scale = linear_warmup_scale(step, warmup_steps)
@@ -122,6 +132,12 @@ def run_training(
             )
             validation_losses.append((step, validation_loss))
 
+        if metrics_file is not None:
+            metrics_record = {"step": step, "train_loss": train_loss}
+            if validation_loss is not None:
+                metrics_record["validation_loss"] = validation_loss
+            append_metrics_record(metrics_file, metrics_record)
+
         if checkpoint_interval > 0 and (step % checkpoint_interval == 0 or step == max_steps):
             if output_dir is not None:
                 checkpoint_metadata = {"train_loss": train_loss}
@@ -136,8 +152,29 @@ def run_training(
                     metadata=checkpoint_metadata,
                 )
 
+    elapsed_seconds = time.perf_counter() - start_time
+    peak_gpu_memory_bytes = (
+        torch.cuda.max_memory_allocated(device)
+        if device.type == "cuda"
+        else 0
+    )
+
+    if metrics_file is not None:
+        append_metrics_record(
+            metrics_file,
+            {
+                "event": "summary",
+                "elapsed_seconds": elapsed_seconds,
+                "last_step": max_steps,
+                "peak_gpu_memory_bytes": peak_gpu_memory_bytes,
+                "steps_per_second": max_steps / max(elapsed_seconds, 1e-12),
+            },
+        )
+
     return TrainingRunResult(
         train_losses=train_losses,
         validation_losses=validation_losses,
         last_step=max_steps,
+        elapsed_seconds=elapsed_seconds,
+        peak_gpu_memory_bytes=peak_gpu_memory_bytes,
     )
