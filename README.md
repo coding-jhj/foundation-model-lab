@@ -131,6 +131,12 @@ python scripts/train_mini_gpt.py --config configs/wikitext2_char.yaml --max-step
 
 The dataset source, configuration, license metadata, and intended experimental use are documented in docs/datasets/wikitext2.md.
 
+For an isolated extended baseline that preserves the 1,000-step artifacts:
+
+~~~bash
+python scripts/train_mini_gpt.py --config configs/wikitext2_char_10k.yaml
+~~~
+
 ## Sample from a trained checkpoint
 
 Use the final checkpoint from the formal baseline and greedy decoding for a deterministic qualitative check:
