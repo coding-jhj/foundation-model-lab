@@ -1,0 +1,3 @@
+A language model learns patterns from a training corpus.
+Validation text measures behavior on held out sequences.
+A reproducible experiment reports the seed, configuration, and observed loss.
