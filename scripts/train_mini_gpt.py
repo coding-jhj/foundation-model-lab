@@ -11,6 +11,7 @@ from data.corpus import encode_text_file, load_character_corpus
 from model.transformer import MiniGPT
 from training.config import load_config
 from training.metrics import append_metrics_record
+from training.model_stats import count_parameters
 from training.pipeline import evaluate_loss, run_training
 from training.reproducibility import resolve_device, set_seed
 
@@ -79,6 +80,7 @@ def main(argv: list[str] | None = None) -> int:
         n_layers=int(model_config["n_layers"]),
         d_ff=int(model_config["d_ff"]),
     ).to(device)
+    parameter_count = count_parameters(model)
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=float(training_config["learning_rate"]),
@@ -110,6 +112,17 @@ def main(argv: list[str] | None = None) -> int:
         else None,
     )
 
+    if metrics_path is not None:
+        append_metrics_record(
+            metrics_path,
+            {
+                "event": "model_summary",
+                "trainable_parameters": parameter_count,
+                "configured_vocab_size": vocab_size,
+                "active_vocab_size": tokenizer.vocab_size,
+            },
+        )
+
     test_loss = None
     test_tokens = None
     test_path = data_config.get("test_path")
@@ -134,6 +147,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"device: {device}")
     print(f"vocabulary size: {tokenizer.vocab_size}")
+    print(f"trainable parameters: {parameter_count}")
     print(f"training tokens: {train_tokens.numel()}")
     print(f"validation tokens: {validation_tokens.numel()}")
     if test_tokens is not None:
