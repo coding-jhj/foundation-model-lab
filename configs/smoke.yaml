@@ -36,6 +36,7 @@ training:
   num_workers: 0
   mixed_precision: false
   output_dir: outputs/mini-gpt-smoke
+  metrics_path: runs/mini-gpt-smoke/metrics.jsonl
 
 evaluation:
   eval_batches: 2
