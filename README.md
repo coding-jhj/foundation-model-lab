@@ -48,9 +48,9 @@ foundation-model-lab/
 
 ## Current milestone
 
-**Milestone 1 — MiniGPT and reproducible pre-training**
+**Milestone 2 — First real language-model dataset**
 
-The repository now contains:
+The repository now supports:
 
 - Stable mathematical primitives and a character tokenizer
 - Causal self-attention and a compact decoder-only Transformer
@@ -58,10 +58,10 @@ The repository now contains:
 - Greedy and temperature-based autoregressive generation
 - Seed and device utilities
 - YAML configuration loading
-- An end-to-end training command
-- English toy data for a non-scientific smoke test
+- End-to-end training commands
+- Reproducible preparation of WikiText-2 raw splits
 
-The toy corpus only verifies that the pipeline runs. It is not evidence for a language-model research claim.
+The tracked toy corpus only verifies that the pipeline runs. It is not evidence for a language-model research claim.
 
 ## Local setup
 
@@ -98,22 +98,47 @@ python scripts/train_mini_gpt.py --config configs/smoke.yaml --max-steps 5
 
 Checkpoints are written under outputs/mini-gpt-smoke/, which is intentionally ignored by Git.
 
-## Run a real local experiment
+## Prepare the first real dataset
 
-Place UTF-8 text files at paths such as:
+The first dataset baseline uses Salesforce WikiText, configuration wikitext-2-raw-v1. The preparation script downloads the train, validation, and test splits through the Hugging Face Datasets library, writes UTF-8 text files under data/raw/, and records metadata.json.
 
-~~~text
-data/raw/train.txt
-data/raw/validation.txt
+Install the optional data dependency:
+
+~~~bash
+python -m pip install -e ".[data]"
 ~~~
 
-The tokenizer vocabulary is built from the training text only. Characters that occur only in validation data are encoded as <unk>. Copy configs/baseline.yaml, update the data paths and experiment budget, and run:
+Prepare the dataset:
+
+~~~bash
+python scripts/prepare_wikitext2.py --output-dir data/raw/wikitext-2-raw-v1 --revision main
+~~~
+
+The dataset card currently lists cc-by-sa-3.0 and gfdl. Review the dataset card and its terms before redistributing derived artifacts.
+
+## Run the WikiText-2 character baseline
+
+~~~bash
+python scripts/train_mini_gpt.py --config configs/wikitext2_char.yaml
+~~~
+
+For the first hardware smoke run on WikiText-2:
+
+~~~bash
+python scripts/train_mini_gpt.py --config configs/wikitext2_char.yaml --max-steps 10
+~~~
+
+The dataset source, configuration, license metadata, and intended experimental use are documented in docs/datasets/wikitext2.md.
+
+## Run a custom local experiment
+
+The tokenizer vocabulary is built from the training text only. Characters that occur only in validation data are encoded as <unk>. Copy a configuration, update the data paths and experiment budget, and run:
 
 ~~~bash
 python scripts/train_mini_gpt.py --config configs/baseline.yaml
 ~~~
 
-The current command supports the character tokenizer, learned positional embeddings, single-step updates, and full-precision training. Unsupported configuration options fail explicitly instead of being silently ignored.
+The current command supports the character tokenizer, learned positional embeddings, single-step updates, linear warmup, and full-precision training. Unsupported configuration options fail explicitly instead of being silently ignored.
 
 ## Research protocol
 
@@ -147,5 +172,6 @@ The goal is to make every result understandable and reproducible by someone who 
 
 - Vaswani et al., *Attention Is All You Need*
 - Stanford CS336, *Language Modeling from Scratch*
+- Merity et al., *Pointer Sentinel Mixture Models*
 - Kaplan et al., *Scaling Laws for Neural Language Models*
 - Hoffmann et al., *Training Compute-Optimal Large Language Models*
