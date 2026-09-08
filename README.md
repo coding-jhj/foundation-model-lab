@@ -60,6 +60,7 @@ The repository now supports:
 - YAML configuration loading
 - End-to-end training commands
 - Reproducible preparation of WikiText-2 raw splits
+- Checkpoint sampling with an active-vocabulary limit
 
 The tracked toy corpus only verifies that the pipeline runs. It is not evidence for a language-model research claim.
 
@@ -129,6 +130,16 @@ python scripts/train_mini_gpt.py --config configs/wikitext2_char.yaml --max-step
 ~~~
 
 The dataset source, configuration, license metadata, and intended experimental use are documented in docs/datasets/wikitext2.md.
+
+## Sample from a trained checkpoint
+
+Use the final checkpoint from the formal baseline and greedy decoding for a deterministic qualitative check:
+
+~~~bash
+python scripts/sample_mini_gpt.py --config configs/wikitext2_char.yaml --checkpoint checkpoints/wikitext2-character-baseline/step-001000.pt --prompt "The " --temperature 0 --max-new-tokens 100
+~~~
+
+The sampling command fits the tokenizer on the training split, restores the checkpoint, and prevents unused model vocabulary slots from appearing in decoded text. Change the prompt or use a nonzero temperature for additional qualitative samples.
 
 ## Run a custom local experiment
 
