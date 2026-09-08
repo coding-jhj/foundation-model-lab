@@ -36,6 +36,7 @@ training:
   num_workers: 0
   mixed_precision: false
   output_dir: checkpoints/wikitext2-character-baseline
+  metrics_path: runs/wikitext2-character-baseline/metrics.jsonl
 
 evaluation:
   eval_batches: 20
