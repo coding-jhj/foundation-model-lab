@@ -69,3 +69,30 @@ def test_generate_with_zero_new_tokens_returns_a_copy_of_the_prompt() -> None:
 
     assert torch.equal(generated, prompt)
     assert generated.data_ptr() != prompt.data_ptr()
+
+
+def test_generate_can_limit_sampling_to_the_tokenizer_vocabulary() -> None:
+    generate = _generation_function()
+
+    class FixedLogitModel(torch.nn.Module):
+        context_length = 4
+
+        def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
+            logits = torch.zeros(
+                input_ids.shape[0],
+                input_ids.shape[1],
+                8,
+            )
+            logits[..., 7] = 10.0
+            return logits
+
+    prompt = torch.tensor([[1, 2]])
+    generated = generate(
+        FixedLogitModel(),
+        prompt,
+        max_new_tokens=1,
+        temperature=0.0,
+        allowed_vocab_size=4,
+    )
+
+    assert generated[0, -1].item() < 4
