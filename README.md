@@ -61,6 +61,7 @@ The repository now supports:
 - End-to-end training commands
 - Reproducible preparation of WikiText-2 raw splits
 - Checkpoint sampling with an active-vocabulary limit
+- Trainable parameter counting and a controlled model-size sweep runner
 
 The tracked toy corpus only verifies that the pipeline runs. It is not evidence for a language-model research claim.
 
@@ -146,6 +147,16 @@ python scripts/sample_mini_gpt.py --config configs/wikitext2_char.yaml --checkpo
 ~~~
 
 The sampling command fits the tokenizer on the training split, restores the checkpoint, and prevents unused model vocabulary slots from appearing in decoded text. Change the prompt or use a nonzero temperature for additional qualitative samples.
+
+## Run the first scaling pilot
+
+The first paper reproduction pilot keeps the WikiText-2 data pipeline and optimization settings fixed while varying MiniGPT model capacity across three isolated configurations:
+
+~~~bash
+python scripts/run_scaling_sweep.py
+~~~
+
+The sweep writes separate checkpoints and JSONL metrics under checkpoints/wikitext2-scaling-* and runs/wikitext2-scaling-*. The exact research question and interpretation limits are documented in papers/reading_notes/kaplan_2020_scaling_laws.md.
 
 ## Run a custom local experiment
 
